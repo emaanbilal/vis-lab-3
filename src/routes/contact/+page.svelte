@@ -3,10 +3,10 @@
 </svelte:head>
 
 <nav>
-  <a href="/">Home</a>
-  <a href="/projects">Projects</a>
-  <a class="current" href="/contact">Contact</a>
-  <a href="/resume">Resume</a>
+  <a href=".">Home</a>
+  <a href="projects">Projects</a>
+  <a class="current" href="contact">Contact</a>
+  <a href="resume">Resume</a>
   <a href="https://github.com/emaanbilal" target="_blank">GitHub</a>
 </nav>
 
