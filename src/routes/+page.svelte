@@ -1,6 +1,6 @@
 <script>
   import projects from "$lib/projects.json";
-  import Project from "$lib/project.svelte";
+  import Project from "$lib/Project.svelte";
   import reading from "$lib/reading.json";
   import ReadingItem from "$lib/ReadingItem.svelte";
 </script>
