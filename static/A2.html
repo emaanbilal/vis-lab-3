@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Vis & Society Assignment 2</title>
+	<link rel="stylesheet" href="https://vis-society.github.io/assignments/report.css" />
+</head>
+
+<body>
+	<header>
+		<h1>
+			<small>Assignment 2</small>
+			Exploratory Data Analysis
+		</h1>
+
+		<p>
+			<strong>Emaan Bilal Khan</strong> — <em>emaan@mit.edu</em>
+		</p>
+	</header>
+	<main>
+		<section>
+			<h2>Subtheme: Exploring Corporate Owners and Evictions</h2>
+
+			<h3>Overall Analysis Questions</h3>
+			<ol>
+				<li>How has the prevalence of corporate ownership evolved across Boston neighborhoods from 2004 to 2024?</li>
+                <p> Motivation: The Housing Justice Beyond the Emergency report explicitly identifies "absentee, institutional ownership" as a primary driver of housing instability, finding that a 1% increase in institutional ownership correlates with more than 2% increased eviction filings. Thus, given that ownership structure seems to influence eviction pressure, understanding whether corporate ownership is increasing over time in Boston is an important initial question to examine whether the city's ownership structure is shifting toward conditions that prior work has associated with instability. 
+				<li>How has owner-occupancy changed across Boston neighborhoods from 2004 to 2024? Does this trend coincide with that of corporate ownership?                </li>
+                <p> Motivation: The same report has also found that live-in landlords had significantly lower eviction filing rates. This suggests that owner-occupancy, as a proxy for local control, may protect against tenant displacement. Exploring this question will both help us identify whether there appears to a structural shift away from historically stable ownership patterns, and whether a replacement dynamic is at play: are we losing live-in landlords specifically because corporations are replacing them? </p>
+                <li>Are these changes disproportionately concentrated in communities of color?</li>
+                <p> Motivation: Both background readings document strong racial inequities in eviction filings, with 43% of filings occurring in majority-nonwhite neighborhoods despite them housing only 32% of renters. If corporate ownership is found to be increasing more rapidly in neighborhoods with higher shares of Black and Latinx residents, this may indicate that structural changes in ownership are layering onto existing racial inequities in housing instability, uncovering a crucial connection that should be addressed in conversations around housing justice.  
+                <!-- <li>Do corporate buyers use cash purchases at higher rates than non-corporate buyers, particularly in lower-income or more vulnerable neighborhoods?</li>
+                <p> Motivation: The NYT article has described the eviction system as one that prioritizes "efficiency" for landlords over due process for tenants. In the property acquisition market, cash offers are the ultimate tool of efficiency, and it is plausible that corporate buyers leverage this liquidity to "price out" individual residents who rely on mortgages, effectively preventing local residents from becoming homeowners and creating fertile ground for rampant eviction patterns. As such, if corporate actors are found to disproportionately use cash in certain neighborhoods, it may indicate structural barriers to community-based ownership, helping establish downstream structural barriers that determine ownership flow and perpetuate inequitable housing dynamics. </p>
+                <li>Is there evidence of ownership consolidation where a small number of buyers control a large share of properties?</li>
+                <p> Motivation: "Concentrated ownership” by absentee and institutional landlords has repeatedly been cited as a risk factor for higher eviction filings. Such a monopoly on housing can dictate market prices and eviction policies more aggressively, connecting directly to systemic landlord power discussed implicitly in both readings. </p> -->
+            </ol>
+		</section>
+
+		<section>
+			<h2>Phase 1: Shape, Structure, and Data Quality Overview</h2>
+        
+            <h3>Initial Data Profiling and Constraints</h3>
+            <p>I began by exploring the data to understand its structure, granularity, and overall quality. My initial audit involved checking for missing values, duplicates, and outliers, assessing completeness, identifying anomalies, and verifying that the dataset behaved in logically consistent ways. I found that each neighborhood's data points are distinctly represented across all years and that there were no null values in the primary corporate ownership dataset. I verified that each neighborhood appears consistently across all 21 years, confirming a balanced panel structure. No duplicate neighborhood-year entries were detected, and no null values were present in the primary ownership rate variables. I also verified that the focal metrics, corporate ownership rate and owner-occupancy rate, were consistently recorded and accurately bounded between 0 and 1, as expected for proportion-based measures. Summary statistics indicated that the average corporate ownership rate across the panel is 0.116 (11.6%), with values ranging from 0.0429 to 0.2005 and a median of 0.1219. This confirms meaningful variation across neighborhoods while remaining within plausible limits. </p>
+            
+            <p>However, a critical review of the available variables revealed that there is no direct eviction filing data present in the datasets. This constraint reaffirmed the value of focusing on the structural ownership patterns associated with eviction risk, rather than eviction outcomes directly. Based on the <em>Homes for All</em> report, absentee and corporate landlords are heavily associated with higher eviction filing rates, whereas local, live-in landlords contribute to housing stability. Given this constraint, my subsequent analysis shifted toward understanding the systemic indicators of these ownership shifts and how they interact with community demographics.</p>
+
+            <p>While examining the population demographic fields across different years, I performed a data quality gut check by visualizing total population over time. I discovered that the total population remained completely constant from 2004 to 2024. Repeating this check for other demographic variables (e.g., black_all, hisp_all, white_all, aapi_all) confirmed that these fields also remain constant across years. This indicates that the demographic data represents a static census snapshot rather than annually updated estimates. This distinction is critical because while ownership trends can be analyzed dynamically over time, demographic composition could thus only be interpreted as contextual background rather than evolving population change. It also helps point to major neighbourhoods useful for future analysis, such as Dorchester and Roxbury with significantly higher population counts.</p>
+			<figure>
+				<img src="./media/dataset-pop-overview.png" alt="" />
+				<figcaption>
+                Total Population by Neighborhood Across Years (2004–2024).
+                Each point represents the recorded total population for a neighborhood in a given year. The consistent shading of points within each neighborhood indicates that total population values remain constant across all years in the dataset.
+				</figcaption>
+			</figure>
+
+			<p>To make use of these static snapshots, I transformed the raw data by creating calculated fields in Tableau. I calculated the proportional representation of each racial group per neighborhood (e.g., <code>SUM([black_all]) / SUM([tot_pop_all])</code>). This ensured that comparisons across neighborhoods would not be distorted by differences in absolute population size. Because the <em>Homes for All</em> report highlights that communities of color, especially Black and Latinx renters, faced disproportionately high rates of eviction filings, it was vital to establish the racial geography of Boston. Using these calculated proportions, I created a "Dominant Race" categorical field, defined as the racial group (White, Black, Hispanic, Asian, or Other) with the highest population share within a neighborhood, setting a foundation for subsequent spatial analysis. This was essential for later investigating whether ownership shifts are unevenly distributed across communities of color.</p>
+
+			<figure>
+				<img src="./media/racial-overview.png" alt="" />
+				<figcaption>
+				Racial Demographics of Boston Neighborhoods (2024). This spatial categorization highlights distinct geographic clustering, such as majority-Black neighborhoods in the center/south (e.g., Roxbury, Dorchester, Mattapan) and majority-Hispanic populations in East Boston. Several western neighborhoods are majority-White.
+				</figcaption>
+			</figure>
+
+			<p>Now that racial distribution was established, I assessed the internal consistency of ownership measures. To do this, I examined the trend for the corporate ownership rate and owner-occupancy rate across all neighborhood-year observations. This provided a baseline for understanding whether ownership patterns were stable over time within each neighborhood or whether there were shifts consistent with prior work's findings.</p>
+
+			Plotting the city-wide averages for both the Corporate Ownership Rate and the Owner Occupancy Rate on a dual-axis line chart, there appeared an evident rise of corporate ownership concurrent with eroding local, live-in ownership (albeit at a slower pace). This pattern was consistent with prior work's findings, suggesting that the city's ownership structure is shifting towards a more corporate-dominated model, warranting more granular examination. We can also see that corporate ownership shows a notably high growth rate (seen by the steep gradient) between 2019 to 2021, corresponding to COVID-19's impact, as explored in the NYT article as well. <figure>
+				<img src="./media/corp-ownership-owner-occ.png"/>
+				<figcaption>
+				Corporate Ownership Rate and Owner Occupancy Rate Trends (2004–2024). This dual-axis line chart shows the city-wide averages for both the Corporate Ownership Rate and the Owner Occupancy Rate across years. The Corporate Ownership Rate has been consistently increasing, while the Owner Occupancy Rate has been decreasing (although at a slower pace). These trend lines validate the literature’s claim that corporate consolidation is steadily replacing "mom-and-pop" live-in landlords across the city. 
+				</figcaption>
+			</figure>
+			<p>A scatterplot with a fitted linear trendline yielded the following relationship:</p>
+
+			<code>Corp Own Rate = –0.366 × Own Occ Rate + 0.275</code>
+			<code>(R² = 0.375, p < 0.0001)</code>
+			
+			<p>This confirms an expected structural inverse relationship: neighborhoods with higher levels of owner occupancy tend to exhibit lower levels of corporate ownership. This is consistent with the conceptual distinction between locally controlled housing and institutional ownership structures described in prior research.</p>
+			
+			<p>Importantly, this step was conducted as a structural diagnostic, not as a causal claim since a host of other factors may influence these trends. The goal was to confirm that the dataset behaves coherently with theoretical expectations and that the dataset captures meaningful ownership regimes as expected.</p>
+
+			<p>Transitioning to the Residential sales data, I profiled the distribution of sale prices and property characteristics to ensure data integrity before analyzing market behaviors like cash sales. The residential sales dataset is structured at the transaction level, with each row representing a property sale between 2000 and 2022. Because transaction-level data are more prone to anomalies, I conducted additional quality checks. This revealed notable anomalies: several transactions featured exceptionally high sale prices but were listed as having 0 bedrooms and 0 bathrooms. These records likely represent commercial land sales, non-market transfers, or data entry errors. To ensure they do not skew my subsequent analysis, I filtered out all residential transactions with 0 beds/baths, substantially influencing the price range, as seen in the figure below.</p>
+			<figure>
+				<img src="./media/data-cleaning.png" alt="" />
+				<figcaption>
+				Distribution of Sale Prices by Neighborhood (2000–2022). Post cleaning, the distribution of sale prices is more representative of the typical property sale in Boston. The original distribution was skewed heavily towards higher prices, with a few outliers driving the mean upwards.
+				</figcaption>
+			</figure>
+
+			<h3>Phase I Summary</h3>
+			<p>By the end of this exploratory phase, several important structural characteristics were established:</p>
+			<ol>
+				<li>The corporate ownership dataset is complete and balanced across neighborhood–years (2004–2024).</li>
+				<li>Demographic variables are static census snapshots across years and must be treated as fixed contextual characteristics.</li>
+				<li>Corporate ownership and owner occupancy move in opposite directions across years, consistent with prior expectations.</li>
+				<li>Corporate ownership rates vary meaningfully across neighborhoods, ranging from approximately 4% to 20%.</li>
+				<li>The residential sales dataset is transaction-level, highly skewed in price, and required targeted cleaning to remove implausible entries.</li>
+				<li>No direct eviction data are present; therefore, the analysis should focus on structural ownership dynamics associated with eviction risk in prior research.</li>
+			</ol>
+			<p>This structural understanding established a rigorous foundation for Phase 2, where I turned to investigating how corporate ownership has evolved over time and whether these shifts are unevenly distributed across Boston neighborhoods.</p>
+
+			<h2>Phase 2: Answering Analysis Questions</h2>
+			<h3>Question 1: How has the prevalence of corporate ownership evolved across Boston neighborhoods from 2004 to 2024?</h3>
+
+			<p>To investigate the evolution of corporate ownership, I started by looking at the macroeconomic trend. Rather than just plotting the average, I wanted to understand how the <em>distribution</em> of corporate ownership across all Boston neighborhoods has shifted over time. I created an animated histogram tracking the count of neighborhoods falling into specific Corporate Ownership Rate bins from 2004 to 2024.</p>
+
+            <figure>
+				<video autoplay muted loop controls playsinline width="600" align="left">
+					<source src="./media/corp-ownership-trends.mp4" type="video/mp4">
+				</video>
+                <figcaption>
+                Distribution Shift of Corporate Ownership (2004 vs. 2024). In inital years, the distribution was heavily right-skewed, with the vast majority of neighborhoods exhibiting corporate ownership rates under 10%. By 2024, the distribution has flattened and shifted dramatically to the right, with the median neighborhood sitting between 20% and 25%, and extreme outliers reaching up to 35%.
+                </figcaption>
+            </figure>
+            <p> The visualization reveals a clear upward trajectory in corporate ownership over the twenty-year period. The virtual disappearance of neighborhoods in the 0–5% bin by 2019 indicates that the baseline level of corporate presence has permanently elevated. Given the <em>Homes for All</em> report's finding that corporate ownership is a primary engine for eviction filings, this rightward shift implies that the structural risk of housing instability has multiplied across the entire city over the last two decades. The increase appears gradual through the late 2000s and early 2010s, followed by a more pronounced acceleration beginning around 2018–2020. This acceleration warrants further investigation, particularly given the timing relative to post-Great Recession recovery and the COVID-19 pandemic housing market disruptions.</p>
+
+            <p>While the histogram effectively illustrates the systemic shift, it obscures heterogeneity across neighborhoods. The distribution tells us that some neighborhoods reached severe levels of corporate consolidation (30% to 40%+) by 2023, but it does not tell us <em>which</em> ones. To develop a better perspective, I needed to refine this analysis by disaggregating the data to track individual neighborhood trajectories.</p>
+    
+			<p>To unpack the rightward shift of the histogram, I isolated the specific neighborhoods that make up the extreme "tail" of the distribution. I filtered the data to identify the top 5 neighborhoods with the highest corporate ownership rates in 2024 and plotted their trajectories over time. To directly address my second research question regarding racial disparities, I annotated these trends with the static racial demographic proportions established in Phase 1. <figure>
+				<img src="./media/neighborhood-corp-trend.png" alt="" />
+				<figcaption>
+				Corporate Ownership Rate Trends by Neighborhood (2004–2024). This visualization shows the top 5 neighborhoods with the highest corporate ownership rates in 2024, plotted against the static racial demographic proportions established in Phase 1. All neighborhooods show a clear upward trend in corporate ownership, but interestingly, these top 5 neighborhoods are majority white, with Asian populations forming the dominant minority.
+				</figcaption>
+			</figure></p>
+
+<p>This visualization yielded an unexpected observation. The <em>Homes for All</em> report strongly associates corporate landlords with disproportionate eviction filings in communities of color. I therefore hypothesized that corporate ownership would be highest in majority-Black and Latinx areas (such as Roxbury, Dorchester, or Mattapan). However, the data reveals that the latest top concentrations of corporate ownership (approaching 35% to 40%) are in the South Boston Waterfront, Fenway, Downtown, Longwood, and Allston. These neighborhoods are predominantly White (ranging from 51% to 77%) with Asian populations forming the dominant minority (ranging from 8% to 25%). Contextualizing this with domain knowledge of Boston, these top 5 neighborhoods represent the city's commercial hubs, luxury waterfront developments (Seaport), and dense university/medical districts. This suggests a critical nuance that not all corporate ownership is the same. The corporate ownership dominating the South Boston Waterfront is likely institutional investment in luxury high-rises, which behaves very differently from speculative corporate landlords purchasing family housing in working-class neighborhoods.</p>
+
+<p>While commercial and luxury areas hold the highest <em>total</em> rates of corporate ownership, the background readings emphasize that the devastating <em>impact</em> of housing instability, namely eviction, falls disproportionately on Black and Latinx residents. The <em>Homes for All</em> report highlights that 43% of eviction filings occurred in majority-nonwhite neighborhoods. Therefore, to understand the true threat of corporate consolidation, I needed to look beyond the absolute highest rates and examine the <em>relative transformation</em> of these neighborhoods over time.</p>
+            
+            <h3>Question 2: Did the overall magnitude and nature of corporate consolidation disproportionately impact communities of color compared to majority-white neighborhoods?</h3>
+
+            <p> By plotting the absolute percentage point change in corporate ownership from 2004 to 2024 across the entire city, I can assess the true scale of the corporate takeover in vulnerable communities versus affluent areas. Furthermore, by examining the year-over-year behavior, I can test if corporate actors behave differently depending on the demographic context of the neighborhood.</p>
+
+            <figure>
+                <img src="./media/overall-change.png" alt="Horizontal bar chart showing the percentage point change of corporate ownership across all Boston neighborhoods, color-coded by dominant race." />
+                <figcaption>
+                The Magnitude of Corporate Consolidation Across All Neighborhoods (2004–2024). This chart displays the absolute percentage point increase in corporate ownership over the 20-year period. While luxury districts like the Waterfront experienced the most extreme raw growth, East Boston (a majority-Hispanic neighborhood) experienced a massive 27 percentage point increase, far outpacing most of the city.
+                </figcaption>
+            </figure>
+
+			<p>Expanding the view to encompass the entire city highlights that severe corporate transformation is not predictable by racial demographics alone. The top tier of the chart features commercial, university, and luxury hubs (South Boston Waterfront, Fenway, Longwood), but sitting squarely in that top tier is East Boston. As the city's only majority-Hispanic neighborhood, East Boston saw its corporate ownership footprint expand by 27 percentage points (+0.27) over two decades. Roxbury and Dorchester, predominantly Black neighborhoods, also saw significant structural shifts of roughly 18 and 15 percentage points, respectively.</p> 
+            
+            <p>This insight highlights the gap between macro-level data and human impact. A 32-point increase in a commercial district like the Waterfront likely represents the construction of new corporate-owned luxury high-rises. However, a 27-point increase in a dense, working-class residential neighborhood like East Boston represents the direct, aggressive displacement of local, live-in homeowners.</p>
+
+
+			<h3>Question 3: Has the decline in Owner Occupancy mirrored the rise in Corporate Ownership, effectively eroding local control?</h3>
+
+            <p>The <em>Homes for All</em> report emphasizes that "local control of property contributes to housing stability", explicitly noting that the presence of live-in landlords is associated with significantly lower eviction filing rates. Having established the massive scale of corporate consolidation across Boston, I needed to investigate the other side of the coin: is this corporate growth happening in tandem with the loss of live-in homeowners? To understand this, I first examined how the distribution of owner-occupancy rates across Boston neighborhoods has shifted over time.</p>
+
+            <figure>
+				<video autoplay muted loop controls playsinline width="600" align="left">
+					<source src="./media/ownership-occ-trends.mp4" type="video/mp4">
+				</video>
+                <figcaption>
+                Decline in Distribution of Owner Occupancy Rates Across Boston Neighborhoods (2004 vs. 2024). In 2005, the distribution of owner occupancy was relatively spread out, with a robust number of neighborhoods maintaining rates between 45% and 65%. By 2023, the distribution has shifted dramatically to the left. The higher-occupancy bins have hollowed out, with the vast majority of Boston neighborhoods now concentrated in the 20% to 30% range.
+                </figcaption>
+            </figure>
+
+            <p>The animated visualization reveals a systemic erosion of local property control. The leftward shift of the histogram occurs steadily across years, with a more even distribution in the early 2000s drifting to a left-skewed one, settling with a peak at 25% in 2024. To ensure this was not merely an artifact of a single macroeconomic crash (such as the 2008 financial crisis or post COVID), I manually examined the longitudinal trend lines for each neighborhood.</p>
+            
+            <p>The trajectories confirmed that the decline in owner-occupancy is not characterized by sudden drops, but rather by a slow, steady, continuous downward slope. With the exception of the South Boston Waterfront, which exhibits high volatility indicative of commercial trading, the residential neighborhoods of Boston are experiencing a slow loss of local ownership.</p>
+
+            <figure>
+                <img src="./media/Change-Owner-Occupancy-All-Neighborhoods.png" alt="Horizontal bar chart showing the percentage point change of owner occupancy across all Boston neighborhoods, color-coded by dominant race." />
+                <figcaption>
+                The Shift Away from the Live-in Landlord (2004–2024). This chart displays the absolute percentage point drop in owner-occupancy rates, sorted by severity. While majority-White neighborhoods experienced the steepest absolute drops, communities of color like East Boston also suffered significant erosion of their local ownership base.
+                </figcaption>
+            </figure>
+
+            <p>Mapping the loss of owner occupancy alongside racial demographics reveals a highly nuanced structural shift. The bar chart demonstrates that the steepest absolute drops in owner occupancy occurred in majority-White neighborhoods, particularly student- and transient-heavy areas like the West End (-16 percentage points) and Brighton (-12 points). However, sitting among these double-digit drops is East Boston, the city's only majority-Hispanic neighborhood, which lost 6 percentage points of its owner-occupied housing.</p>
+            
+            <p>Interestingly, predominantly Black neighborhoods like Dorchester, Mattapan, and Roxbury remained relatively stable in owner occupancy (dropping by only 1 to 2 points, or even gaining slightly in Roxbury's case). When viewed in tandem with the massive 15-to-18 point spikes in corporate ownership these same neighborhoods experienced (Figure 6), a critical insight emerges: in Black neighborhoods, corporate entities are likely aggressively acquiring properties from other absentee landlords rather than directly displacing owner-occupiers. In East Boston, however, the rise in corporate ownership is directly affecting owner occupancy rates.</p>
+
+            <p>While the bar chart shows who lost the <em>most</em> ground, I also wanted to identify which neighborhoods currently have the lowest absolute levels of owner occupancy. I isolated the bottom five neighborhoods for owner occupancy in 2024 and plotted their 20-year trajectories, annotating them with their racial demographics.</p>
+
+
+
+            <figure>
+
+                <img src="./media/Trend-of-Ownership-Occupancy-Bottom-5.png" alt="Small multiples line chart showing the steady downward trajectory of owner occupancy in the West End, North End, Allston, Longwood, and Fenway." />
+
+                <figcaption>
+
+                Owner Occupancy Trajectories of the Lowest-Occupancy Neighborhoods. Tracking the owner occupancy rate from 2004 to 2024 reveals a slow, continuous decline. Notably, three of these neighborhoods, Allston, Longwood, and Fenway, were also in the Top 5 for highest corporate ownership in 2024.
+
+                </figcaption>
+
+            </figure>
+
+
+
+            <p>This visualization yielded a striking connection. Three of the five neighborhoods with the lowest owner-occupancy rates in the entire city (Allston, Longwood, and Fenway, all sitting below 22%) are the same neighborhoods that ranked in the Top 5 for the highest corporate ownership rates (Figure 5). This validates the general inverse pattern established in Phase 1: extreme corporate consolidation is often accompanied by a decline in local owner-occupancy.</p>
+            
+
+
+            <p>Incidentally, all five of these neighborhoods are predominantly White, serving as dense university hubs or commercial districts. While the erosion of local ownership happens here at the highest absolute volume, the background literature reminds us that the consequences of this erosion, evictions, fall disproportionately on Black and Latinx renters who rely on local live-in landlords for stability.</p>
+
+
+
+
+            <p>While most neighborhoods follow a slow, predictable loss in local ownership, the South Boston Waterfront stands out as a glaring anomaly. In the overall change bar chart (Figure 8), it was the only neighborhood to significantly gain owner-occupancy over the 20-year period. Yet, it also holds the highest, most volatile corporate ownership rate in the city. To understand this contradiction, I plotted both metrics specifically for this neighborhood over time.</p>
+
+
+
+
+            <figure>
+
+                <img src="./media/Corporate-Ownership-and-Owner-Occupancy-Rates-in-South-Boston-Waterfront.png" alt="Line chart plotting Corporate Ownership vs Owner Occupancy in South Boston Waterfront from 2004 to 2024." />
+
+                <figcaption>
+
+                Volatility in Corporate Ownership and Owner Occupancy Rates in the South Boston Waterfront. Unlike the rest of the city, both corporate ownership and owner-occupancy exhibit positive overall trendlines. The relationship is highly volatile, with both metrics experiencing massive year-over-year swings.
+
+                </figcaption>
+
+            </figure>
+
+
+
+
+            <p>This visualization reveals that the relationship between corporate ownership and owner-occupancy is not strictly zero-sum in every context. Rather than one metric smoothly opposing the other, both trendlines here are moving upward, accompanied by extreme year-to-year fluctuations.</p>
+            
+
+
+            <p>Contextualizing this with domain knowledge of Boston explains the anomaly: the South Boston Waterfront (referred to as the Seaport District) underwent massive, ground-up development during this 20-year period. It is not a mature residential market where corporations are buying existing homes. Instead, the total housing supply was actively expanding. The wild fluctuations likely represent the lifecycle of luxury real estate development: institutional investors and corporate developers construct massive new condo towers (spiking the corporate ownership rate), hold them, and eventually sell off units to wealthy individuals (spiking the owner-occupancy rate). Because the total denominator (number of homes) is constantly shifting through new construction, these rates are driven by external development factors.</p>
+
+
+
+
+            <p>This reinforces my earlier conclusion: corporate ownership in commercial/luxury districts behaves fundamentally differently than corporate creep in working-class communities of color, where the housing supply is relatively fixed and corporate gains come directly at the expense of local owners.</p>
+
+
+
+
+            <h3>Question 4: Is the rise in corporate ownership associated with increased housing vacancy and asset speculation?</h3>
+            <p>As corporate entities absorb more of the housing stock, a related question arises regarding the <em>usage</em> of that stock. The New York Times article highlights how housing is increasingly treated as an efficient financial asset rather than a home. If corporate landlords are prioritizing asset accumulation, they may be holding units vacant, further restricting the housing supply. To test this, I plotted the correlation between the Vacancy Rate and Corporate Ownership Rate for the year 2024.</p>
+
+            
+
+
+            <figure>
+
+                <img src="./media/vacant-rate-vs-corp-own.png" alt="Scatterplot showing a positive correlation between the rate of vacant units and corporate ownership in 2024." />
+
+                <figcaption>
+
+                Corporate Ownership and Vacant Units (2024). This scatterplot demonstrates a statistically significant positive correlation between a neighborhood's corporate ownership rate and its vacancy rate. Outliers like the South Boston Waterfront and Downtown feature the highest concentrations of both corporate ownership and empty units.
+
+                </figcaption>
+
+            </figure>
+
+
+
+
+            <p>The scatterplot yields a highly statistically significant positive correlation (R² = 0.441, p = 0.001). Approximately 44% of the variance in a neighborhood's vacancy rate can be correlated to its rate of corporate ownership. Neighborhoods heavily dominated by corporate entities (like the Waterfront, Downtown, and West End) suffer from vacancy rates between 12% and 22%.</p>
+            
+
+
+
+            <p>This confirms the systemic risks outlined in the background literature. Corporate consolidation not only systematically removes live-in landlords from vulnerable communities, but across the broader city, it is strongly associated with housing units being removed from the active market entirely, sitting vacant as speculative assets. </p>
+
+            <p>The macro-level analysis of the <code>boston_property_rates</code> dataset has painted a stark, structural picture: corporate ownership is multiplying across the city, owner-occupancy is lowering with communities of color facing its brunt, and high corporate presence correlates strongly with vacant housing.</p>
+            <section>
+				<h2>Summary</h2>
+	
+				<h3>Summary of Main Lessons Learned</h3>
+				<p>This initial exploration of the <code>boston_property_rates</code> dataset revealed several critical structural shifts in Boston's housing market over the last two decades:</p>
+				<ul>
+					<li><strong>The Scale of Corporate Consolidation:</strong> Corporate ownership has dramatically expanded across the entire city. While the highest absolute rates are found in transient or luxury commercial districts (like the South Boston Waterfront and the West End), alarming relative growth also occurred in vulnerable communities. East Boston, the city's only majority-Hispanic neighborhood, saw its corporate footprint expand by a high 27 percentage points.</li>
+					<li><strong>The Erosion of Local Defenses:</strong> Mirroring the rise of corporate entities is the hollowing out of local owner-occupancy. The data confirms a steady 20-year decrease in live-in landlords across Boston. Because the background literature identifies local property control as a primary defense against eviction filings, this structural loss leaves communities of color highly vulnerable to displacement.</li>
+					<li><strong>The Vacancy Risk:</strong> There is a statistically significant positive correlation between a neighborhood's corporate ownership rate and its vacancy rate. This suggests that extreme corporate consolidation not only displaces local owners but is also associated with units being held empty as speculative financial assets.</li>
+				</ul>
+	
+				<h3>Future Work </h3>
+				<p>While the macro-level data establishes <em>what</em> has happened to Boston's housing stock, the logical next step is to uncover exactly <em>how</em> these changes are enacted based on purchase patterns.</p>
+				<p>Moving forward, it would be interesting to dive into the transaction-level <code>Residential sales data</code> to investigate the market mechanisms driving this transition. Specifically, I hope to analyze the weaponization of "Cash Sales." By mapping the proportion of cash transactions won by corporate investors versus traditional buyers in communities of color, I may be able to show how capital advantages are actively used to bypass the mortgage market and systematically lock local residents out of homeownership.</p>
+			</section>
+		</section>
+	</main>
+	</body>
+</html>
