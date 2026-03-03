@@ -2,14 +2,6 @@
   <title>Resume</title>
 </svelte:head>
 
-<nav>
-  <a href=".">Home</a>
-  <a href="projects">Projects</a>
-  <a href="contact">Contact</a>
-  <a class="current" href="resume">Resume</a>
-  <a href="https://www.github.com/emaanbilal" target="_blank">GitHub</a>
-</nav>
-
 <main class="resume">
   <h1>Resume</h1>
 

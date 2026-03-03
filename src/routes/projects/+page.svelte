@@ -7,14 +7,6 @@
   <title>Projects</title>
 </svelte:head>
 
-<nav>
-  <a href=".">Home</a>
-  <a class="current" href="projects">Projects</a>
-  <a href="contact">Contact</a>
-  <a href="resume">Resume</a>
-  <a href="https://github.com/emaanbilal" target="_blank">GitHub</a>
-</nav>
-
 <main>
   <h1>{projects.length} Projects</h1>
   <div class="projects">

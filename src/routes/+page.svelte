@@ -5,14 +5,6 @@
   import ReadingItem from "$lib/ReadingItem.svelte";
 </script>
 
-<nav>
-  <a class="current" href=".">Home</a>
-  <a href="projects">Projects</a>
-  <a href="contact">Contact</a>
-  <a href="resume">Resume</a>
-  <a href="https://www.github.com/emaanbilal" target="_blank">GitHub</a>
-</nav>
-
 <main>
   <div class="intro">
     <div class="intro-main">
