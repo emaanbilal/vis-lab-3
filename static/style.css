@@ -82,7 +82,7 @@ img {
 
 .reading-list {
   flex: 1;
-  background-color: oklch(92% 0.02 210);
+  background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
   padding: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -101,7 +101,7 @@ img {
   display: flex;
   gap: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid oklch(80% 0.02 210);
+  border-top: 1px solid var(--border-color);
 }
 
 .reading-item:first-child {
@@ -125,12 +125,13 @@ img {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
+  color: black;
 }
 
 .reading-author {
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
-  color: oklch(45% 0.03 250);
+  color: black;
 }
 
 .projects {
