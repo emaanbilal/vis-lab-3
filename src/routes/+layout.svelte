@@ -13,11 +13,11 @@ $: localStorage.colorScheme = colorScheme;
 let root = globalThis.document?.documentElement;
 $: root?.style.setProperty("color-scheme", colorScheme);
 let pages = [
-  { url: "/", title: "Home" },
-  { url: "/projects", title: "Projects" },
-  { url: "/resume", title: "Resume" },
-  { url: "/contact", title: "Contact" },
-  { url: "https://github.com/emaanbilal", title: "Github" },
+  { url: "/", title: "Home", external: false },
+  { url: "/projects", title: "Projects", external: false },
+  { url: "/resume", title: "Resume", external: false },
+  { url: "/contact", title: "Contact", external: false },
+  { url: "https://github.com/emaanbilal", title: "Github", external: true },
 ];
 </script>
 
@@ -34,13 +34,15 @@ let pages = [
   <nav>
     {#each pages as p}
       <a
-        href={p.url.startsWith("http") ? p.url : base + p.url}
+        href={p.external ? p.url : base + p.url}
         class:current={
-          p.url === "/"
+          !p.external &&
+          (p.url === "/"
             ? $page.url.pathname === (base + "/")
-            : !p.url.startsWith("http") && $page.url.pathname.startsWith(base + p.url)
+            : $page.url.pathname.startsWith(base + p.url))
         }
-        target={p.url.startsWith("http") ? "_blank" : undefined}
+        target={p.external ? "_blank" : undefined}
+        rel={p.external ? "external noopener noreferrer" : undefined}
       >
         {p.title}
       </a>
@@ -49,3 +51,10 @@ let pages = [
 
   <slot />
 </div>
+
+<style>
+  /* Ensures layout (and nav) get Svelte's scoped class when inspecting */
+  .layout :global(nav) {
+    /* nav styles live in static/style.css */
+  }
+</style>
