@@ -111,6 +111,14 @@
       <text x={innerWidth / 2} y={innerHeight + 46} text-anchor="middle" class="axis-label">
         Lines of code
       </text>
+<text
+    x={-(innerHeight / 2)}
+    y={-margin.left + 30}
+    text-anchor="middle"
+    transform="rotate(-90)"
+    class="axis-label">
+    Language
+</text>
     </g>
   </svg>
 
