@@ -15,6 +15,7 @@ $: root?.style.setProperty("color-scheme", colorScheme);
 let pages = [
   { url: "/", title: "Home", external: false },
   { url: "/projects", title: "Projects", external: false },
+  { url: "/meta", title: "Meta", external: false },
   { url: "/resume", title: "Resume", external: false },
   { url: "/contact", title: "Contact", external: false },
   { url: "https://github.com/emaanbilal", title: "Github", external: true },

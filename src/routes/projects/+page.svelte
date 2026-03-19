@@ -2,9 +2,33 @@
   import projects from "$lib/projects.json";
   import Project from "$lib/Project.svelte";
   import ProjectNarrative from "$lib/ProjectNarrative.svelte";
+  import Bar from "$lib/Bar.svelte";
+  import { onMount } from 'svelte';
+  import * as d3 from 'd3';
 
   let years = projects.map(proj => proj.year)
   let range = Math.max(...years) - Math.min(...years);
+
+  let rawData = [];
+  $: barData = d3.rollups(projects, v => v.length, d => d.year)
+    .map(([year, count]) => ({ label: String(year), value: count }));
+
+
+
+let wrangled = [];
+let total = 0;
+onMount(async () => {
+    rawData = await d3.json('/lab6_example.json');
+    total = d3.sum(rawData, d => d.lines);
+    wrangled = d3.rollups(
+        rawData,
+        v => d3.sum(v, d => d.lines)/total,
+        d => d.language
+    );
+});
+
+$: barData = d3.rollups(projects, v => v.length, d => d.year)
+    .map(([year, count]) => ({ label: String(year), value: count }));
 
 </script>
 
@@ -24,4 +48,7 @@
       <Project data={p} />
     {/each}
   </div>
+  <section>
+    <Bar data={barData} />
+</section>
 </main>

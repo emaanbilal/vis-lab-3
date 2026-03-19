@@ -5,6 +5,7 @@ node_modules
 /package
 .env
 .env.*
+static/loc.csv
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

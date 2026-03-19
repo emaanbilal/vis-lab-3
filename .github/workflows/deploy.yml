@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate loc.csv
+        run: npx elocuent -d static,src -o static/loc.csv
+
       - name: build
         env:
           BASE_PATH: "/${{ github.event.repository.name }}"
@@ -46,3 +49,4 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+

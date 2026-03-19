@@ -3,7 +3,7 @@
 </script>
 
 <article>
-    <h2>{data.title}</h2>
+    <h2>{data.title} ({data.year})</h2>
     <img src="{data.image}" alt="">
     <a href="{data.link}">View Project</a>
 </article>
