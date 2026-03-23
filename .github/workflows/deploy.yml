@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -19,6 +21,13 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      # Optional if loc.csv still shows a single commit after fetch-depth: 0.
+      # Override with your `git config user.email` / `user.name` if needed.
+      - name: Configure git
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
       - name: Generate loc.csv
         run: npx elocuent -d static,src -o static/loc.csv

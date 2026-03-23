@@ -1,13 +1,15 @@
 <script>
   import * as d3 from "d3";
+
   export let data = [];
+  export let title = "";
 
-  let width = 460;
-  let height = 320;
-  let margin = { top: 56, right: 20, bottom: 60, left: 105 };
+  let width = 400;
+  let height = 240;
+  let margin = { top: 40, right: 14, bottom: 52, left: 96 };
 
-  let innerWidth = width - margin.left - margin.right;
-  let innerHeight = height - margin.top - margin.bottom;
+  $: innerWidth = width - margin.left - margin.right;
+  $: innerHeight = height - margin.top - margin.bottom;
 
   let xAxis;
   let yAxis;
@@ -35,11 +37,13 @@
     maxBar = d3.greatest(data, (d) => d.value);
   }
 
+  $: maxTickCount = Math.min(d3.max(data, (d) => d.value) || 1, 10);
+
   $: if (xAxis && yAxis) {
     d3.select(xAxis).call(
       d3
         .axisBottom(xScale)
-        .ticks(Math.min(6, Math.max(2, data.length)))
+        .ticks(maxTickCount)
         .tickSizeOuter(0)
     );
 
@@ -51,11 +55,11 @@
   <svg viewBox="0 0 {width} {height}">
     <text
       x={margin.left + innerWidth / 2}
-      y={margin.top / 2}
+      y={margin.top / 2 + 4}
       text-anchor="middle"
       class="chart-title"
     >
-      Total Lines of Code by Language
+      {title}
     </text>
 
     <g transform="translate({margin.left}, {margin.top})">
@@ -73,7 +77,6 @@
           />
 
           {#if maxBar && d.label === maxBar.label}
-            <!-- Highlight the max language bar -->
             <rect
               x={0}
               y={yScale(d.label)}
@@ -87,38 +90,36 @@
         </g>
       {/each}
 
-      {#if maxBar}
-        <!-- Annotation -->
-        <line
-          x1={xScale(maxBar.value)}
-          y1={yScale(maxBar.label) + yScale.bandwidth() / 2}
-          x2={xScale(maxBar.value) + 28}
-          y2={yScale(maxBar.label) + yScale.bandwidth() / 2}
-          stroke="currentColor"
-          stroke-width="1"
-        />
+      {#if maxBar && maxBar.value > 0}
         <text
-          x={xScale(maxBar.value) + 34}
+          x={xScale(maxBar.value) + 6}
           y={yScale(maxBar.label) + yScale.bandwidth() / 2}
           dominant-baseline="middle"
+          text-anchor="start"
           class="annotation"
         >
           Most LOC: {maxBar.label}
         </text>
       {/if}
 
-      <!-- Axis labels -->
-      <text x={innerWidth / 2} y={innerHeight + 46} text-anchor="middle" class="axis-label">
-        Lines of code
+      <text
+        x={innerWidth / 2}
+        y={innerHeight + 36}
+        text-anchor="middle"
+        class="axis-label"
+      >
+        <tspan x={innerWidth / 2} dy="0">Lines of</tspan>
+        <tspan x={innerWidth / 2} dy="1.1em">code</tspan>
       </text>
-<text
-    x={-(innerHeight / 2)}
-    y={-margin.left + 30}
-    text-anchor="middle"
-    transform="rotate(-90)"
-    class="axis-label">
-    Language
-</text>
+      <text
+        x={-(innerHeight / 2)}
+        y={-margin.left + 22}
+        text-anchor="middle"
+        transform="rotate(-90)"
+        class="axis-label"
+      >
+        Language
+      </text>
     </g>
   </svg>
 
@@ -135,7 +136,7 @@
 <style>
   .container {
     display: flex;
-    gap: 1.25rem;
+    gap: 1rem;
     align-items: flex-start;
     max-width: 1100px;
     width: 100%;
@@ -144,25 +145,26 @@
   }
 
   .legend {
-    flex: 1 1 260px;
-    max-width: 280px;
+    flex: 1 1 200px;
+    max-width: 220px;
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.45rem;
+    font-size: 0.85rem;
   }
 
   .legend li {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .swatch {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background-color: var(--color);
     display: inline-block;
     border-radius: 3px;
@@ -175,31 +177,30 @@
     max-width: 100%;
     height: auto;
     overflow: visible;
-    flex: 1 1 520px;
+    flex: 1 1 400px;
   }
 
   .chart-title {
-    font-size: 1em;
+    font-size: 0.78rem;
     font-weight: bold;
     fill: currentColor;
   }
 
   .axis-label {
-    font-size: 0.8em;
+    font-size: 0.68rem;
     fill: currentColor;
   }
 
   .annotation {
-    font-size: 0.75em;
-    fill: black;
+    font-size: 0.65rem;
+    fill: currentColor;
     font-style: italic;
   }
 
   @media (max-width: 900px) {
     .container {
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1rem;
     }
   }
 </style>
-
