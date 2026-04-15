@@ -8,12 +8,12 @@
     "story": "For this assignment I wanted to go beyond a single choropleth and instead build a small analytic tool for myself. I started by cleaning the City of Boston ownership and eviction records, then experimented with views that let me compare corporate and individual landlords across neighborhoods. The final piece helped me see how a handful of companies drive a large share of filings, and it sparked questions about how policy could better target those owners."
   },
   {
-    "title": "Life Expectancy vs. GDP Interactive Scatterplot",
-    "image": "https://si-interactive.s3.amazonaws.com/prod/plansponsor-com/wp-content/uploads/2023/01/23122142/PS-01232023-TIAA-Longevity-Literacy-Research-1351036587.jpg",
-    "description": "A D3-based scatterplot that visualizes the relationship between GDP per capita and life expectancy for countries around the world.",
-    "link": "#",
+    "title": "Bikewatching in Boston",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXaXqd0S0IdhYHjt0cC_Najg4WHUCbcNO2Ew&s",
+    "description": "A map-based visualization of bike traffic in Boston.",
+    "link": "https://bikewatching.vercel.app/",
     "year": 2026,
-    "story": "This project was my first serious attempt at building an interactive chart from scratch. I spent a lot of time tuning the scales and tooltips so that hovering felt smooth and informative, not overwhelming. Seeing clusters of countries emerge—especially outliers that were rich but unhealthy, or poor but surprisingly long-lived—made me appreciate how much nuance a simple scatterplot can hold."
+    "story": "This project was Lab 9 of the Interactive Data Visualization course which showed bike traffic in the Boston area during different times of the day, utilizing the Mapbox API and D3.js."
   },
   {
     "title": "Transit Equity in Greater Boston",
