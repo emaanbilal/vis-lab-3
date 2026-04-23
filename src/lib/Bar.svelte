@@ -1,5 +1,5 @@
 <script>
-  import * as d3 from 'd3';
+import * as d3 from 'd3';
 
 let width = 400;
 let height = 300;
@@ -19,8 +19,9 @@ $: yScale = d3.scaleLinear()
     .domain([0, d3.max(data, d => d.value) || 1])
     .range([innerHeight, 0]);
 
-$: colorScale = d3.scaleOrdinal(d3.schemeTableau10)
-    .domain(data.map(d => d.label));
+$: colorScale = d3.scaleOrdinal()
+    .domain(data.map(d => d.label))
+    .range(d3.quantize(d3.interpolateBlues, data.length));
 
 $: if (xAxis && yAxis) {
     d3.select(xAxis).call(d3.axisBottom(xScale));
@@ -34,12 +35,43 @@ $: if (xAxis && yAxis) {
 $: maxBar = d3.greatest(data, d => d.value);
 
 
+let selectedIndex = -1;
+
+function toggleBar(index, event) {
+    if (!event.key || event.key === "Enter") {
+        selectedIndex = index;
+    }
+}
+
+$: description = `A bar chart showing project counts by year. ${data.map(d => `${d.label}: ${d.value} projects`).join(', ')}.`;
+let liveText = "";
+    let showChart = true;
+
+    function toggleView() {
+        showChart = !showChart;
+        liveText = showChart ? "Bar chart view shown." : "Table view shown.";
+    }
+
+
 
 
 </script>
 
+<button
+  on:click={toggleView}
+  aria-pressed={!showChart}
+  aria-label="Toggle between bar chart and table view"
+  class="toggle-button">
+    {showChart ? 'Show Table' : 'Show Chart'}
+</button>
+
+{#if showChart}
 <div class="container">
-<svg viewBox="0 0 {width} {height}">
+<svg viewBox="0 0 {width} {height}"
+  role="img"
+  aria-labelledby="bar-title bar-desc">
+  <title id="bar-title">Projects by Year</title>
+  <desc id="bar-desc">{description}</desc>
         <text
             x={margin.left + innerWidth / 2}
             y={margin.top / 2}
@@ -52,15 +84,23 @@ $: maxBar = d3.greatest(data, d => d.value);
     <g transform="translate({margin.left}, {margin.top})"
        bind:this={yAxis} />
     <g transform="translate({margin.left}, {margin.top})">
-        {#each data as d}
-            <rect
+            {#each data as d, index}
+            <rect 
+                class="bar"
+                stroke="black"
                 x={xScale(d.label)}
                 y={yScale(d.value)}
                 width={xScale.bandwidth()}
                 height={innerHeight - yScale(d.value)}
                 fill={colorScale(d.label)}
+                opacity={selectedIndex === -1 || selectedIndex === index ? 1 : 0.45}
+                tabindex="0"
+                role="button"
+                aria-label={`Select ${d.label}: ${d.value} projects`}
+                on:click={(e) => toggleBar(index, e)}
+                on:keyup={(e) => toggleBar(index, e)}
             />
-
+            {/each}
             <text
     x={innerWidth / 2}
     y={innerHeight + margin.bottom - 40}
@@ -77,7 +117,6 @@ $: maxBar = d3.greatest(data, d => d.value);
     class="axis-label">
     Number of Projects
 </text>
-        {/each}
         {#if maxBar}
     <!-- highlight outline around the tallest bar -->
     <rect
@@ -88,6 +127,7 @@ $: maxBar = d3.greatest(data, d => d.value);
         fill="none"
         stroke="currentColor"
         stroke-width="2"
+        pointer-events="none"
     />
     <!-- leader line -->
     <line
@@ -111,6 +151,7 @@ $: maxBar = d3.greatest(data, d => d.value);
 
     </g>
 </svg>
+<p aria-live="polite" class="sr-only">{liveText}</p>
     <ul class="legend">
         {#each data as d}
             <li style="--color: {colorScale(d.label)}">
@@ -120,6 +161,25 @@ $: maxBar = d3.greatest(data, d => d.value);
         {/each}
     </ul>
 </div>
+{:else}
+<table aria-label="Table showing project counts by year" class="data-table">
+    <caption>Projects by Year</caption>
+    <thead>
+        <tr>
+          <th id="year-header" scope="col">Year</th>
+          <th id="projects-header" scope="col">Projects</th>
+        </tr>
+      </thead>
+    <tbody>
+        {#each data as d, i}
+          <tr>
+            <th id="row-{i}" scope="row">{d.label}</th>
+            <td aria-labelledby="row-{i} projects-header">{d.value}</td>
+          </tr>
+        {/each}
+      </tbody>
+  </table>
+{/if}
 
 
 <style>
@@ -160,6 +220,35 @@ $: maxBar = d3.greatest(data, d => d.value);
     overflow: visible;
   }
 
+  .bar {
+    transition: 300ms;
+    stroke: black;
+    stroke-width: 1px;
+    outline: none;
+  }
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.bar:focus-visible {
+  stroke: white;
+  stroke-width: 2px;
+  stroke-dasharray: 4; 
+  }
+
+
+svg:hover .bar:not(:hover), .container:focus-within .bar:not(:focus-visible) { opacity: 0.5; }
+.bar:focus-visible {
+  stroke: white;
+  stroke-width: 2px;
+  stroke-dasharray: 4;
+}
+
+
+
   @media (max-width: 800px) {
     .container {
       flex-direction: column;
@@ -181,5 +270,32 @@ $: maxBar = d3.greatest(data, d => d.value);
     fill: black;
     font-style: italic;
 }
+
+.data-table {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 30em;
+}
+
+.data-table caption {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f0f0f0;
+}
+
+
 
 </style>
